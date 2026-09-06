@@ -1,0 +1,60 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Officer Login – Maha FDA{% endblock %}
+
+{% block content %}
+<div class="login-wrapper">
+  <div class="card">
+    <div style="text-align: center; margin-bottom: 24px;">
+      <div style="font-size: 40px; margin-bottom: 8px;">🔐</div>
+      <h2 style="color: var(--primary-dark); font-size: 22px; font-weight: 800;">
+        FDA Officer Login
+      </h2>
+      <p style="color: var(--text-muted); font-size: 13.5px; margin-top: 4px;">
+        Restricted enforcement and grievance triage portal
+      </p>
+    </div>
+
+    {% if error %}
+      <div class="alert alert-danger" style="margin-bottom: 20px;">
+        <span>⚠️ {{ error }}</span>
+      </div>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('officer_login') }}">
+      <div class="form-group">
+        <label class="form-label" for="username">Officer Username <span class="required">*</span></label>
+        <input
+          type="text"
+          class="form-control"
+          id="username"
+          name="username"
+          placeholder="Enter officer username"
+          required
+          autocomplete="username">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password">Password <span class="required">*</span></label>
+        <input
+          type="password"
+          class="form-control"
+          id="password"
+          name="password"
+          placeholder="Enter password"
+          required
+          autocomplete="current-password">
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 15px; margin-top: 8px;">
+        🔓 Sign In to Dashboard
+      </button>
+    </form>
+
+    <div style="margin-top: 22px; font-size: 12.5px; color: var(--text-muted); text-align: center; border-top: 1px solid var(--border-light); padding-top: 14px;">
+      🔒 <strong>Authorized FDA Enforcement Personnel Only.</strong><br>
+      Access is restricted to authorized regulatory officers.
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,201 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Officer Complaint Dashboard – Maha FDA{% endblock %}
+
+{% block content %}
+<!-- Dashboard Header -->
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 14px;">
+  <div>
+    <h2 style="color: var(--primary-dark); font-size: 26px; font-weight: 800;">
+      👨‍💼 Officer Complaint Dashboard
+    </h2>
+    <p style="color: var(--text-muted); font-size: 14px;">
+      Grievance monitoring, AI-assisted risk triage, and regulatory enforcement tracking
+    </p>
+  </div>
+  <div style="display: flex; gap: 10px; align-items: center;">
+    <span style="font-size: 13.5px; color: var(--text-muted);">
+      Logged in as: <strong style="color: var(--primary-dark);">{{ session.get('officer_name', 'FDA Officer') }}</strong>
+    </span>
+    <a href="{{ url_for('officer_logout') }}" class="btn btn-danger btn-sm">Logout</a>
+  </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon blue">📁</div>
+    <div class="stat-info">
+      <h3>{{ total }}</h3>
+      <span>Total Complaints</span>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon red">🔴</div>
+    <div class="stat-info">
+      <h3>{{ high }}</h3>
+      <span>High Priority</span>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon orange">🟠</div>
+    <div class="stat-info">
+      <h3>{{ medium }}</h3>
+      <span>Medium Priority</span>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon green">🟢</div>
+    <div class="stat-info">
+      <h3>{{ low }}</h3>
+      <span>Low Priority</span>
+    </div>
+  </div>
+</div>
+
+<!-- Search & Filters -->
+<div class="card" style="padding: 20px; margin-bottom: 24px;">
+  <form method="GET" action="{{ url_for('admin') }}" style="display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end;">
+    <div style="flex: 2; min-width: 200px;">
+      <label class="form-label" style="margin-bottom: 4px; font-size: 13px;">Search Grievances</label>
+      <input
+        type="text"
+        name="q"
+        class="form-control"
+        placeholder="Search by ID, name, location, or keyword..."
+        value="{{ search_query }}">
+    </div>
+
+    <div style="flex: 1; min-width: 140px;">
+      <label class="form-label" style="margin-bottom: 4px; font-size: 13px;">Status Filter</label>
+      <select name="status" class="form-control">
+        <option value="all" {% if selected_status == 'all' %}selected{% endif %}>All Statuses</option>
+        <option value="Pending" {% if selected_status == 'Pending' %}selected{% endif %}>Pending</option>
+        <option value="Under Review" {% if selected_status == 'Under Review' %}selected{% endif %}>Under Review</option>
+        <option value="Action Taken" {% if selected_status == 'Action Taken' %}selected{% endif %}>Action Taken</option>
+        <option value="Resolved" {% if selected_status == 'Resolved' %}selected{% endif %}>Resolved</option>
+      </select>
+    </div>
+
+    <div style="flex: 1; min-width: 140px;">
+      <label class="form-label" style="margin-bottom: 4px; font-size: 13px;">Priority Filter</label>
+      <select name="priority" class="form-control">
+        <option value="all" {% if selected_priority == 'all' %}selected{% endif %}>All Priorities</option>
+        <option value="high" {% if selected_priority == 'high' %}selected{% endif %}>High (>= 70%)</option>
+        <option value="medium" {% if selected_priority == 'medium' %}selected{% endif %}>Medium (40-69%)</option>
+        <option value="low" {% if selected_priority == 'low' %}selected{% endif %}>Low (&lt; 40%)</option>
+      </select>
+    </div>
+
+    <div style="display: flex; gap: 8px;">
+      <button type="submit" class="btn btn-primary" style="padding: 11px 18px;">
+        🔍 Filter
+      </button>
+      <a href="{{ url_for('admin') }}" class="btn btn-outline" style="padding: 11px 16px;">
+        Reset
+      </a>
+    </div>
+  </form>
+</div>
+
+<!-- Complaints Table -->
+<div class="card" style="padding: 0; overflow: hidden;">
+  <div style="padding: 18px 22px; border-bottom: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+    <h3 style="color: var(--primary-dark); font-size: 17px; font-weight: 700;">
+      📋 Active Complaints List (Sorted: Highest Priority First, Newest Next)
+    </h3>
+    <span style="font-size: 13px; color: var(--text-muted);">
+      Showing <strong>{{ complaints|length }}</strong> matching records
+    </span>
+  </div>
+
+  <div class="table-responsive">
+    <table class="custom-table">
+      <thead>
+        <tr>
+          <th>Complaint ID</th>
+          <th>Type</th>
+          <th>Photo</th>
+          <th>Location</th>
+          <th>AI Priority</th>
+          <th>AI Reason</th>
+          <th>Status</th>
+          <th>Date</th>
+          <th style="text-align: right;">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if complaints %}
+          {% for c in complaints %}
+            <tr>
+              <td>
+                <a href="{{ url_for('complaint_details', complaint_id=c.complaint_id) }}" style="color: var(--primary-blue); font-weight: 700; text-decoration: none; font-family: monospace;">
+                  {{ c.complaint_id }}
+                </a>
+              </td>
+              <td style="font-weight: 500;">{{ c.complaint_type }}</td>
+              <td>
+                {% if c.photo %}
+                  <a href="{{ url_for('uploaded_file', filename=c.photo) }}" target="_blank" title="View full evidence">
+                    <img
+                      src="{{ url_for('uploaded_file', filename=c.photo) }}"
+                      alt="Evidence"
+                      style="width: 44px; height: 44px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border-color);">
+                  </a>
+                {% else %}
+                  <span style="color: var(--text-light); font-size: 12px;">No Photo</span>
+                {% endif %}
+              </td>
+              <td style="max-width: 170px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ c.location }}">
+                {{ c.location }}
+              </td>
+              <td>
+                {% if c.severity >= 70 %}
+                  <span class="badge badge-priority-high">🔴 HIGH ({{ c.severity }}%)</span>
+                {% elif c.severity >= 40 %}
+                  <span class="badge badge-priority-medium">🟠 MED ({{ c.severity }}%)</span>
+                {% else %}
+                  <span class="badge badge-priority-low">🟢 LOW ({{ c.severity }}%)</span>
+                {% endif %}
+              </td>
+              <td style="max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12.5px;" title="{{ c.ai_reason }}">
+                {{ c.ai_reason or 'AI analysis unavailable.' }}
+              </td>
+              <td>
+                {% if c.status == 'Pending' %}
+                  <span class="badge badge-status-pending">Pending</span>
+                {% elif c.status == 'Under Review' %}
+                  <span class="badge badge-status-review">Under Review</span>
+                {% elif c.status == 'Action Taken' %}
+                  <span class="badge badge-status-action">Action Taken</span>
+                {% elif c.status == 'Resolved' %}
+                  <span class="badge badge-status-resolved">Resolved</span>
+                {% else %}
+                  <span class="badge badge-status-pending">{{ c.status }}</span>
+                {% endif %}
+              </td>
+              <td style="font-size: 12.5px; color: var(--text-muted); white-space: nowrap;">
+                {{ c.created_at }}
+              </td>
+              <td style="text-align: right; white-space: nowrap;">
+                <a href="{{ url_for('complaint_details', complaint_id=c.complaint_id) }}" class="btn btn-primary btn-sm">
+                  View &amp; Update
+                </a>
+              </td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="9" style="text-align: center; padding: 36px 20px; color: var(--text-muted);">
+              No complaints found matching your search and filter criteria.
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

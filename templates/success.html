@@ -1,0 +1,68 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Complaint Submitted – Maha FDA{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 650px; margin: 20px auto; text-align: center;">
+  <div style="font-size: 54px; margin-bottom: 12px;">✅</div>
+  
+  <h2 style="color: var(--primary-dark); font-size: 26px; font-weight: 800; margin-bottom: 8px;">
+    Complaint Submitted!
+  </h2>
+  
+  <p style="color: var(--text-muted); font-size: 15px; margin-bottom: 24px;">
+    Your complaint has been successfully registered in the safety redressal system.
+  </p>
+
+  <!-- Key Identifier Box -->
+  <div style="background: #F0FDF4; border: 1.5px dashed #86EFAC; border-radius: var(--radius-md); padding: 20px; margin-bottom: 24px;">
+    <span style="font-size: 13px; color: #166534; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; display: block; margin-bottom: 6px;">
+      Complaint ID
+    </span>
+    <div style="font-size: 28px; font-weight: 800; color: var(--primary-dark); letter-spacing: 1px; font-family: monospace;">
+      {{ complaint_id }}
+    </div>
+  </div>
+
+  <!-- Priority Assessment Box -->
+  <div style="background: #F8FAFC; border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 20px; margin-bottom: 24px; text-align: left;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+      <div>
+        <span style="font-size: 13px; color: var(--text-muted); font-weight: 600; display: block;">Preliminary Priority Score</span>
+        <span style="font-size: 24px; font-weight: 800; color: var(--primary-dark);">{{ severity }}%</span>
+      </div>
+      <div>
+        {% if severity >= 70 %}
+          <span class="badge badge-priority-high" style="font-size: 13px; padding: 6px 14px;">🔴 HIGH PRIORITY</span>
+        {% elif severity >= 40 %}
+          <span class="badge badge-priority-medium" style="font-size: 13px; padding: 6px 14px;">🟠 MEDIUM PRIORITY</span>
+        {% else %}
+          <span class="badge badge-priority-low" style="font-size: 13px; padding: 6px 14px;">🟢 LOW PRIORITY</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div style="font-size: 13.5px; color: var(--text-main); background: #FFFFFF; border: 1px solid var(--border-light); padding: 12px; border-radius: var(--radius-sm); line-height: 1.5;">
+      <strong>Preliminary AI Triage Assessment:</strong><br>
+      {{ ai_reason }}
+    </div>
+  </div>
+
+  <div class="notice-box" style="text-align: left;">
+    📌 <strong>Please save your Complaint ID for future status tracking.</strong> You will need this reference code to check the progress of the official review and field inspection.
+  </div>
+
+  <div class="ai-warning-box" style="text-align: left; font-size: 12.5px;">
+    ⚠️ <strong>Advisory:</strong> AI-assisted priority is only a preliminary recommendation and does not replace official investigation.
+  </div>
+
+  <div style="display: flex; gap: 12px; justify-content: center; margin-top: 24px; flex-wrap: wrap;">
+    <a href="{{ url_for('my_complaints', complaint_id=complaint_id) }}" class="btn btn-primary">
+      🔍 Track This Complaint
+    </a>
+    <a href="{{ url_for('home') }}" class="btn btn-outline">
+      🏠 Return to Home
+    </a>
+  </div>
+</div>
+{% endblock %}

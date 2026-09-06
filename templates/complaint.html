@@ -1,0 +1,170 @@
+﻿{% extends "base.html" %}
+
+{% block title %}File a Complaint – Maha FDA Citizen Complaint Portal{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 820px; margin: 0 auto;">
+  <div style="text-align: center; margin-bottom: 24px; border-bottom: 1px solid var(--border-light); padding-bottom: 18px;">
+    <h2 style="color: var(--primary-dark); font-size: 26px; font-weight: 800; margin-bottom: 6px;">
+      🚨 File Citizen Grievance
+    </h2>
+    <p style="color: var(--text-muted); font-size: 14.5px;">
+      Report suspected food or drug regulatory breaches directly for preliminary safety triage.
+    </p>
+  </div>
+
+  <form id="complaintForm" action="{{ url_for('submit_complaint') }}" method="POST" enctype="multipart/form-data">
+    
+    <!-- Section 1: Complaint Classification -->
+    <h3 style="font-size: 16px; color: var(--primary-dark); font-weight: 700; margin-bottom: 14px; border-left: 4px solid var(--primary-blue); padding-left: 10px;">
+      1. Complaint Classification &amp; Details
+    </h3>
+
+    <div class="form-group">
+      <label class="form-label" for="complaintType">Complaint Type <span class="required">*</span></label>
+      <select class="form-control" name="complaint_type" id="complaintType" required>
+        <option value="">-- Select Violation Category --</option>
+        <option value="Expired Food">Expired Food (Stale items, expired labels, spoiled milk/meat)</option>
+        <option value="Adulterated Food">Adulterated Food (Synthetic chemicals, colored dyes, foreign objects)</option>
+        <option value="Unsafe Food">Unsafe Food (Unhygienic prep, pest infestation, food poisoning risk)</option>
+        <option value="Spurious Drug">Spurious Drug (Counterfeit medicine, fake packaging, illicit tablets)</option>
+        <option value="Drug Quality Issue">Drug Quality Issue (Sediment in syrups, broken seals, defective vials)</option>
+        <option value="Unlicensed Sale">Unlicensed Sale (Selling prescription drugs without Rx, banned substances)</option>
+        <option value="Misbranded Product">Misbranded Product (Misleading claims, missing manufacturing info)</option>
+        <option value="Other FDA Violation">Other FDA Violation (General regulatory or pricing breaches)</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="description">Complaint Description <span class="required">*</span></label>
+      <textarea
+        class="form-control"
+        name="description"
+        id="description"
+        placeholder="Please describe what happened, product details (brand, batch, expiry), date and time of purchase/incident, and any visible health hazard or symptoms..."
+        required></textarea>
+      <div class="form-help">Be specific regarding vendor name, landmark, and physical symptoms if applicable.</div>
+    </div>
+
+    <!-- Section 2: Photographic Evidence -->
+    <h3 style="font-size: 16px; color: var(--primary-dark); font-weight: 700; margin: 26px 0 14px; border-left: 4px solid var(--secondary-green); padding-left: 10px;">
+      2. Upload Photographic Evidence
+    </h3>
+
+    <div class="form-group">
+      <label class="form-label">Evidence Photo (Optional but recommended)</label>
+      <div class="photo-upload-zone" onclick="document.getElementById('photoInput').click()">
+        <div style="font-size: 36px; margin-bottom: 8px;">📷</div>
+        <strong style="color: var(--primary-dark); font-size: 15px;">Click to select or capture a photo</strong>
+        <p style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">
+          Supports JPG, JPEG, PNG, WEBP (Maximum size: 5 MB)
+        </p>
+        <input
+          type="file"
+          id="photoInput"
+          name="photo"
+          accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
+      </div>
+      <div id="photoPreviewContainer" class="photo-preview-container" style="text-align: center;">
+        <img id="photoPreviewImg" class="photo-preview-img" alt="Selected Evidence Preview">
+      </div>
+    </div>
+
+    <!-- Section 3: Location Details -->
+    <h3 style="font-size: 16px; color: var(--primary-dark); font-weight: 700; margin: 26px 0 14px; border-left: 4px solid var(--primary-blue); padding-left: 10px;">
+      3. Incident / Vendor Location
+    </h3>
+
+    <div class="form-group">
+      <label class="form-label" for="locationInput">Location / Address <span class="required">*</span></label>
+      <input
+        type="text"
+        class="form-control"
+        id="locationInput"
+        name="location"
+        placeholder="e.g. Shop 12, MG Road, Dadar West, Mumbai or GPS coordinates"
+        required>
+
+      <!-- Hidden latitude and longitude inputs -->
+      <input type="hidden" id="latitudeInput" name="latitude" value="">
+      <input type="hidden" id="longitudeInput" name="longitude" value="">
+
+      <div class="location-row">
+        <button type="button" class="btn btn-success btn-sm" onclick="detectLocation()">
+          📍 Get My Location
+        </button>
+        <a
+          id="googleMapsBtn"
+          href="#"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn btn-outline btn-sm"
+          style="display: none;">
+          🗺️ View on Google Maps
+        </a>
+      </div>
+      <p id="location-status"></p>
+      <div class="form-help">
+        If location access is denied or unavailable, you can manually type the full shop address above.
+      </div>
+    </div>
+
+    <!-- Section 4: Citizen Information -->
+    <h3 style="font-size: 16px; color: var(--primary-dark); font-weight: 700; margin: 26px 0 14px; border-left: 4px solid var(--secondary-green); padding-left: 10px;">
+      4. Citizen Information
+    </h3>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" for="name">Your Full Name <span class="required">*</span></label>
+        <input
+          type="text"
+          class="form-control"
+          id="name"
+          name="name"
+          placeholder="Enter your name"
+          required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="mobileInput">Mobile Number <span class="required">*</span></label>
+        <input
+          type="tel"
+          class="form-control"
+          id="mobileInput"
+          name="mobile"
+          placeholder="10-digit mobile number"
+          pattern="[0-9]{10}"
+          title="Please enter a 10-digit mobile number"
+          required>
+        <div class="form-help">Strictly 10 digits without prefix or spaces.</div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="email">Email Address (Optional)</label>
+      <input
+        type="email"
+        class="form-control"
+        id="email"
+        name="email"
+        placeholder="yourname@example.com">
+      <div class="form-help">Citizen contact details are strictly confidential and visible only to authorized FDA officers.</div>
+    </div>
+
+    <!-- Legal Warning & Verification Notice -->
+    <div class="notice-box">
+      ⚖️ <strong>Please provide truthful information.</strong> The complaint is subject to official verification.
+    </div>
+
+    <div class="ai-warning-box" style="margin-bottom: 24px;">
+      🤖 <strong>Preliminary Analysis Notice:</strong> An automated AI safety model will compute a preliminary risk priority score (0–100) to help prioritize inspections. AI-assisted priority is only a preliminary recommendation and does not replace official investigation.
+    </div>
+
+    <!-- Submit Button -->
+    <button type="submit" id="submitBtn" class="btn btn-danger" style="width: 100%; padding: 14px; font-size: 16px;">
+      🚨 Submit Complaint
+    </button>
+  </form>
+</div>
+{% endblock %}

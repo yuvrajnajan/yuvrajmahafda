@@ -1,0 +1,219 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Complaint Details – {{ complaint.complaint_id }}{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
+  <div>
+    <a href="{{ url_for('admin') }}" class="btn btn-outline btn-sm" style="margin-bottom: 8px;">
+      ← Back to Dashboard
+    </a>
+    <h2 style="color: var(--primary-dark); font-size: 24px; font-weight: 800;">
+      Grievance Dossier: <span style="font-family: monospace;">{{ complaint.complaint_id }}</span>
+    </h2>
+  </div>
+  <div>
+    {% if complaint.status == 'Pending' %}
+      <span class="badge badge-status-pending" style="font-size: 14px; padding: 7px 16px;">⏳ Status: Pending</span>
+    {% elif complaint.status == 'Under Review' %}
+      <span class="badge badge-status-review" style="font-size: 14px; padding: 7px 16px;">🔍 Status: Under Review</span>
+    {% elif complaint.status == 'Action Taken' %}
+      <span class="badge badge-status-action" style="font-size: 14px; padding: 7px 16px;">⚡ Status: Action Taken</span>
+    {% elif complaint.status == 'Resolved' %}
+      <span class="badge badge-status-resolved" style="font-size: 14px; padding: 7px 16px;">✅ Status: Resolved</span>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Mandatory Legal / AI Advisory Warning Banner -->
+<div class="ai-warning-box" style="margin-bottom: 24px;">
+  ⚖️ <strong>Regulatory Caution:</strong> This is a preliminary automated prioritization recommendation. It does not determine whether the complaint is genuine and does not replace official investigation or decisions by an authorized FDA officer.
+</div>
+
+<div class="details-grid">
+  <!-- Left Column: Core Dossier & Location & Status Update -->
+  <div>
+    <!-- Section 1: Complaint Information -->
+    <div class="card">
+      <h3 class="card-title">📄 Complaint Information</h3>
+      <div class="info-list">
+        <div class="info-row">
+          <span class="info-label">Complaint ID:</span>
+          <span class="info-val" style="font-family: monospace;">{{ complaint.complaint_id }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Violation Category:</span>
+          <span class="info-val">{{ complaint.complaint_type }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Lodged Date:</span>
+          <span class="info-val">{{ complaint.created_at }}</span>
+        </div>
+        <div class="info-row" style="flex-direction: column; gap: 6px;">
+          <span class="info-label">Description:</span>
+          <div style="background: #F8FAFC; border: 1px solid var(--border-light); padding: 14px; border-radius: var(--radius-sm); font-size: 14px; line-height: 1.5; white-space: pre-line; color: var(--text-main);">
+            {{ complaint.description }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: Location Section -->
+    <div class="card">
+      <h3 class="card-title">📍 Location &amp; Coordinates</h3>
+      <div class="info-list">
+        <div class="info-row">
+          <span class="info-label">Reported Address / Landmark:</span>
+          <span class="info-val">{{ complaint.location }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Latitude:</span>
+          <span class="info-val">{{ complaint.latitude or 'Not provided' }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Longitude:</span>
+          <span class="info-val">{{ complaint.longitude or 'Not provided' }}</span>
+        </div>
+      </div>
+
+      <div style="margin-top: 18px;">
+        {% if complaint.latitude and complaint.longitude %}
+          <a
+            href="https://www.google.com/maps?q={{ complaint.latitude }},{{ complaint.longitude }}"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn btn-primary btn-sm">
+            🗺️ View on Google Maps
+          </a>
+        {% elif complaint.location and 'GPS:' in complaint.location %}
+          {% set coords = complaint.location.replace('GPS:', '').strip() %}
+          <a
+            href="https://www.google.com/maps?q={{ coords }}"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn btn-primary btn-sm">
+            🗺️ View on Google Maps
+          </a>
+        {% else %}
+          <a
+            href="https://www.google.com/maps/search/?api=1&query={{ complaint.location | urlencode }}"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn btn-outline btn-sm">
+            🗺️ Search Location on Google Maps
+          </a>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Section 3: Status Management -->
+    <div class="card" style="border: 2px solid var(--primary-blue);">
+      <h3 class="card-title" style="color: var(--primary-blue);">
+        🔄 Update Enforcement Status
+      </h3>
+      <p style="font-size: 13.5px; color: var(--text-muted); margin-bottom: 16px;">
+        Changing status updates the citizen tracking timeline in real time.
+      </p>
+
+      <form method="POST" action="{{ url_for('update_status', complaint_id=complaint.complaint_id) }}">
+        <input type="hidden" name="redirect_to" value="details">
+        <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+          <select name="status" class="form-control" style="flex: 1; min-width: 180px;" required>
+            <option value="Pending" {% if complaint.status == 'Pending' %}selected{% endif %}>Pending</option>
+            <option value="Under Review" {% if complaint.status == 'Under Review' %}selected{% endif %}>Under Review</option>
+            <option value="Action Taken" {% if complaint.status == 'Action Taken' %}selected{% endif %}>Action Taken</option>
+            <option value="Resolved" {% if complaint.status == 'Resolved' %}selected{% endif %}>Resolved</option>
+          </select>
+          <button type="submit" class="btn btn-success" style="padding: 11px 22px;">
+            💾 Update Status
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Right Column: Evidence Photo, Citizen Info, AI Assessment -->
+  <div>
+    <!-- Photographic Evidence -->
+    <div class="card">
+      <h3 class="card-title">📷 Photo Evidence</h3>
+      {% if complaint.photo %}
+        <div style="text-align: center;">
+          <a href="{{ url_for('uploaded_file', filename=complaint.photo) }}" target="_blank">
+            <img
+              src="{{ url_for('uploaded_file', filename=complaint.photo) }}"
+              alt="Evidence photo"
+              style="max-width: 100%; max-height: 280px; object-fit: contain; border-radius: var(--radius-md); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
+          </a>
+          <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">
+            Click image to view in full resolution
+          </p>
+        </div>
+      {% else %}
+        <p style="color: var(--text-muted); font-size: 14px; text-align: center; padding: 24px 0;">
+          No photograph was uploaded with this complaint.
+        </p>
+      {% endif %}
+    </div>
+
+    <!-- AI Preliminary Assessment -->
+    <div class="card">
+      <h3 class="card-title">🤖 AI Preliminary Assessment</h3>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+        <div>
+          <span style="font-size: 13px; color: var(--text-muted); display: block;">Calculated Score</span>
+          <span style="font-size: 26px; font-weight: 800; color: var(--primary-dark);">{{ complaint.severity }}%</span>
+        </div>
+        <div>
+          {% if complaint.severity >= 70 %}
+            <span class="badge badge-priority-high">🔴 HIGH PRIORITY</span>
+          {% elif complaint.severity >= 40 %}
+            <span class="badge badge-priority-medium">🟠 MEDIUM PRIORITY</span>
+          {% else %}
+            <span class="badge badge-priority-low">🟢 LOW PRIORITY</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <div style="background: #F8FAFC; border: 1px solid var(--border-light); padding: 12px; border-radius: var(--radius-sm); font-size: 13.5px; line-height: 1.5; color: var(--text-main);">
+        <strong>Triage Justification:</strong><br>
+        {{ complaint.ai_reason or 'AI analysis unavailable.' }}
+      </div>
+    </div>
+
+    <!-- Confidential Citizen Information -->
+    <div class="card" style="background: #FDFEFE; border-left: 4px solid var(--primary-dark);">
+      <h3 class="card-title" style="font-size: 17px;">🔒 Citizen Information</h3>
+      <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">
+        Confidential details visible to authorized officers only.
+      </p>
+      <div class="info-list">
+        <div class="info-row">
+          <span class="info-label">Name:</span>
+          <span class="info-val">{{ complaint.name }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Mobile:</span>
+          <span class="info-val">
+            <a href="tel:{{ complaint.mobile }}" style="color: var(--primary-blue); font-weight: 700; text-decoration: none;">
+              {{ complaint.mobile }}
+            </a>
+          </span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Email:</span>
+          <span class="info-val">
+            {% if complaint.email %}
+              <a href="mailto:{{ complaint.email }}" style="color: var(--primary-blue); text-decoration: none;">
+                {{ complaint.email }}
+              </a>
+            {% else %}
+              <span style="color: var(--text-muted); font-size: 12px;">Not provided</span>
+            {% endif %}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,140 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Track Complaint Status – Maha FDA{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 760px; margin: 0 auto 30px;">
+  <div style="text-align: center; margin-bottom: 24px;">
+    <h2 style="color: var(--primary-dark); font-size: 24px; font-weight: 800; margin-bottom: 6px;">
+      🔍 Track Complaint Status
+    </h2>
+    <p style="color: var(--text-muted); font-size: 14.5px;">
+      Enter your unique Complaint ID to check real-time progress and verification stages.
+    </p>
+  </div>
+
+  <form method="POST" action="{{ url_for('my_complaints') }}" style="display: flex; gap: 12px; flex-wrap: wrap;">
+    <input
+      type="text"
+      name="complaint_id"
+      class="form-control"
+      style="flex: 1; min-width: 240px; font-weight: 600; text-transform: uppercase;"
+      placeholder="e.g. FDA-A1B2C3D4"
+      value="{{ search_id or '' }}"
+      required>
+    <button type="submit" class="btn btn-primary" style="padding: 12px 24px;">
+      🔎 Track Status
+    </button>
+  </form>
+
+  {% if error %}
+    <div class="alert alert-danger" style="margin-top: 20px; margin-bottom: 0;">
+      <span>⚠️ {{ error }}</span>
+    </div>
+  {% endif %}
+</div>
+
+{% if complaint %}
+<div class="card" style="max-width: 760px; margin: 0 auto;">
+  <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-light); padding-bottom: 16px; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+    <div>
+      <span style="font-size: 12px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">
+        Tracking Reference
+      </span>
+      <h3 style="color: var(--primary-dark); font-size: 22px; font-weight: 800; font-family: monospace;">
+        {{ complaint.complaint_id }}
+      </h3>
+    </div>
+    <div>
+      {% if complaint.status == 'Pending' %}
+        <span class="badge badge-status-pending" style="font-size: 13px; padding: 6px 14px;">⏳ Pending</span>
+      {% elif complaint.status == 'Under Review' %}
+        <span class="badge badge-status-review" style="font-size: 13px; padding: 6px 14px;">🔍 Under Review</span>
+      {% elif complaint.status == 'Action Taken' %}
+        <span class="badge badge-status-action" style="font-size: 13px; padding: 6px 14px;">⚡ Action Taken</span>
+      {% elif complaint.status == 'Resolved' %}
+        <span class="badge badge-status-resolved" style="font-size: 13px; padding: 6px 14px;">✅ Resolved</span>
+      {% else %}
+        <span class="badge badge-status-pending" style="font-size: 13px; padding: 6px 14px;">{{ complaint.status }}</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- 4-Stage Visual Progress Timeline -->
+  <div class="timeline-container">
+    <div class="timeline">
+      <!-- Stage 1: Submitted -->
+      {% set s1_done = true %}
+      <div class="timeline-step completed">
+        <div class="timeline-step-icon">1</div>
+        <div class="timeline-step-label">Complaint Submitted</div>
+      </div>
+
+      <!-- Stage 2: Under Review -->
+      {% set s2_done = (complaint.status in ['Under Review', 'Action Taken', 'Resolved']) %}
+      {% set s2_active = (complaint.status == 'Under Review') %}
+      <div class="timeline-step {% if s2_done %}completed{% endif %} {% if s2_active %}active{% endif %}">
+        <div class="timeline-step-icon">2</div>
+        <div class="timeline-step-label">Under Review</div>
+      </div>
+
+      <!-- Stage 3: Action Taken -->
+      {% set s3_done = (complaint.status in ['Action Taken', 'Resolved']) %}
+      {% set s3_active = (complaint.status == 'Action Taken') %}
+      <div class="timeline-step {% if s3_done %}completed{% endif %} {% if s3_active %}active{% endif %}">
+        <div class="timeline-step-icon">3</div>
+        <div class="timeline-step-label">Action Taken</div>
+      </div>
+
+      <!-- Stage 4: Resolved -->
+      {% set s4_done = (complaint.status == 'Resolved') %}
+      {% set s4_active = (complaint.status == 'Resolved') %}
+      <div class="timeline-step {% if s4_done %}completed active{% endif %}">
+        <div class="timeline-step-icon">4</div>
+        <div class="timeline-step-label">Resolved</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Complaint Information Grid -->
+  <div class="info-list" style="margin-top: 24px;">
+    <div class="info-row">
+      <span class="info-label">Complaint Type</span>
+      <span class="info-val">{{ complaint.complaint_type }}</span>
+    </div>
+
+    <div class="info-row">
+      <span class="info-label">Submission Date</span>
+      <span class="info-val">{{ complaint.created_at }}</span>
+    </div>
+
+    <div class="info-row">
+      <span class="info-label">Reported Location</span>
+      <span class="info-val">{{ complaint.location }}</span>
+    </div>
+
+    <div class="info-row">
+      <span class="info-label">Preliminary Priority</span>
+      <span class="info-val">
+        {% if complaint.severity >= 70 %}
+          <span class="badge badge-priority-high">🔴 HIGH ({{ complaint.severity }}%)</span>
+        {% elif complaint.severity >= 40 %}
+          <span class="badge badge-priority-medium">🟠 MEDIUM ({{ complaint.severity }}%)</span>
+        {% else %}
+          <span class="badge badge-priority-low">🟢 LOW ({{ complaint.severity }}%)</span>
+        {% endif %}
+      </span>
+    </div>
+
+    <div class="info-row">
+      <span class="info-label">Current Status</span>
+      <span class="info-val" style="font-weight: 700;">{{ complaint.status }}</span>
+    </div>
+  </div>
+
+  <div class="ai-warning-box" style="margin-top: 20px; font-size: 13px;">
+    ℹ️ <strong>Note on Progress:</strong> When officers initiate preliminary review, sample collection, or enforcement visits, the status advances here in real time.
+  </div>
+</div>
+{% endif %}
+{% endblock %}

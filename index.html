@@ -1,0 +1,113 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Home – Maha FDA Citizen Complaint Portal{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+  <h2 class="hero-title">Help Us Keep Maharashtra Safe</h2>
+  <p class="hero-subtitle">
+    Report suspected food, drug and other FDA-related violations. Empowering citizens to uphold public health and consumer safety standards.
+  </p>
+  <div class="hero-actions">
+    <a href="{{ url_for('complaint') }}" class="btn btn-danger">🚨 File a Complaint</a>
+    <a href="{{ url_for('my_complaints') }}" class="btn btn-light">🔍 Track Complaint</a>
+  </div>
+</section>
+
+<!-- Citizen Services Section -->
+<section style="margin-bottom: 40px;">
+  <div style="text-align: center; margin-bottom: 24px;">
+    <h3 style="font-size: 24px; color: var(--primary-dark); font-weight: 800;">Citizen Services</h3>
+    <p style="color: var(--text-muted); font-size: 14.5px;">Quick access to our regulatory reporting and tracking tools</p>
+  </div>
+
+  <div class="services-grid">
+    <a href="{{ url_for('complaint') }}" class="service-card">
+      <div class="service-icon">📝</div>
+      <h4>1. New Complaint</h4>
+      <p>Register suspected food or drug violations in minutes with complete privacy.</p>
+    </a>
+
+    <a href="{{ url_for('complaint') }}" class="service-card">
+      <div class="service-icon">📷</div>
+      <h4>2. Upload Evidence</h4>
+      <p>Attach clear photographs of expired labels, receipts, or adulterated products.</p>
+    </a>
+
+    <a href="{{ url_for('complaint') }}" class="service-card">
+      <div class="service-icon">📍</div>
+      <h4>3. Get Location</h4>
+      <p>Capture exact vendor coordinates via high-accuracy browser geolocation.</p>
+    </a>
+
+    <a href="{{ url_for('my_complaints') }}" class="service-card">
+      <div class="service-icon">🔎</div>
+      <h4>4. Track Complaint</h4>
+      <p>Check investigation stage and officer updates using your unique Complaint ID.</p>
+    </a>
+
+    <a href="{{ url_for('fda_contact') }}" class="service-card">
+      <div class="service-icon">☎️</div>
+      <h4>5. FDA Contact</h4>
+      <p>View verified divisional headquarters contact details across Maharashtra.</p>
+    </a>
+  </div>
+</section>
+
+<!-- Grievance Redressal Statistics -->
+<section class="card" style="margin-bottom: 36px;">
+  <h3 class="card-title">📊 Live Portal Activity Overview</h3>
+  <div class="stats-grid" style="margin-bottom: 0;">
+    <div class="stat-card">
+      <div class="stat-icon blue">📁</div>
+      <div class="stat-info">
+        <h3>{{ total }}</h3>
+        <span>Total Complaints</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon red">🔴</div>
+      <div class="stat-info">
+        <h3>{{ high_priority }}</h3>
+        <span>High Priority Cases</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon orange">⚡</div>
+      <div class="stat-info">
+        <h3>{{ action_taken }}</h3>
+        <span>Action Taken</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon green">✅</div>
+      <div class="stat-info">
+        <h3>{{ resolved }}</h3>
+        <span>Resolved Cases</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Verification & AI Advisory Section -->
+<section class="card">
+  <h3 class="card-title">⚖️ Official Verification &amp; Advisory Notice</h3>
+  <p style="color: var(--text-main); font-size: 14.5px; line-height: 1.6; margin-bottom: 16px;">
+    All grievances lodged through this portal are treated as formal alerts and are subject to verification by qualified FDA enforcement officers. Citizens are requested to provide accurate shop/vendor locations, product batch details, and genuine photographic evidence to assist swift inspection.
+  </p>
+
+  <div class="ai-warning-box">
+    <strong>⚠️ Important Notice Regarding AI Prioritization:</strong><br>
+    AI-assisted priority is only a preliminary recommendation and does not replace official investigation. Automated scores assist officers in triaging urgent public health risks and never approve, reject, or close complaints autonomously.
+  </div>
+
+  <div class="notice-box">
+    <strong>Student / Academic Project Notice:</strong><br>
+    This web portal is developed strictly as a demonstration project. It is not affiliated with the Maharashtra State Government or the Food and Drug Administration. For emergency health crises, please contact your nearest municipal health authority or call official emergency services.
+  </div>
+</section>
+{% endblock %}
