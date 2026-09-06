@@ -115,6 +115,8 @@ def create_database():
     conn.commit()
     conn.close()
 
+    
+creat_database()
 # --------------------------------------------------
 # COMPLAINT ID GENERATOR
 # --------------------------------------------------
